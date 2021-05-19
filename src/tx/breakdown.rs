@@ -6,7 +6,7 @@
 // frame even when enough space for it was available. This is now changed but
 // the code was a bit tight and has now some replication that should be removed.
 
-use core::{marker::PhantomData, panic, slice::ChunksExact};
+use core::{marker::PhantomData, slice::ChunksExact};
 
 use crc_any::CRCu16;
 
@@ -270,5 +270,47 @@ impl<'a, Frame: CanFrame<MTU>, const MTU: usize> Iterator for Breakdown<'a, Fram
             BreakdownState::MultiFrameHalfCRC => Some(self.build_half_crc()),
             BreakdownState::Closed => None,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use proptest::prelude::*;
+    extern crate std;
+
+    use crate::CLASSIC_MTU;
+
+    proptest! {
+        #[test]
+        fn the_crc_is_to_be_embedded_when_the_last_frame_of_the_payload_has_at_least_three_available_bytes(last_frame_data_len in 1..CLASSIC_MTU-3 ) {
+            prop_assert!(matches!(crc_kind::<CLASSIC_MTU>(last_frame_data_len), CRCKind::Embedded))
+        }
+    }
+
+    #[test]
+    fn the_crc_is_to_be_half_embedded_when_the_last_frame_of_the_payload_has_exactly_two_available_bytes() {
+        assert!(matches!(crc_kind::<CLASSIC_MTU>(CLASSIC_MTU - 2), CRCKind::HalfEmbedded))
+    }
+
+    proptest! {
+        #[test]
+        fn the_crc_is_to_be_isolated_when_the_last_frame_of_the_payload_has_less_than_two_available_bytes(last_frame_data_len in CLASSIC_MTU-1..CLASSIC_MTU) {
+            prop_assert!(matches!(crc_kind::<CLASSIC_MTU>(last_frame_data_len), CRCKind::Isolated))
+        }
+    }
+
+    // TODO: This test is not actually meaningful considering the specification
+    // of the kind of the crc as `depending on the available bytes in the last
+    // frame of the payload.`
+    // If the "last frame of the payload" has no payload data, that frame wouldn't exist at all.
+    // This inconsistencies comes from the specific implementation of `crc_kind` as based on the
+    // `remainder of the payload length divided by the amount of space available for each frame`,
+    // which is needed to slot it more easily into the way that breakdown is built ( specifically the use of chunks ).
+    // Either reform the tests to be a specification of this implemented behavior or change the implementation to
+    // respect the specification of the tests which should render this test meaningless.
+    #[test]
+    fn the_crc_is_to_be_isolated_when_the_last_frame_of_the_payload_has_a_length_of_0() {
+        assert!(matches!(crc_kind::<CLASSIC_MTU>(0), CRCKind::Isolated))
     }
 }
