@@ -1,0 +1,16 @@
+[package]
+name = "uavcan"
+version = "0.1.0"
+authors = ["Di Sera Luca <disera.luca@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+modular-bitfield = "0.11"
+heapless = "0.6"
+crc-any = { version = "2.3", default-features = false }
+proptest = "1.0"
+
+[dev-dependencies]
+socketcan = "1.7"
+rand = "0.8"
+proptest = "1.0"
