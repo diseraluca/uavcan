@@ -41,19 +41,20 @@ pub enum CRCKind {
     Isolated,
 }
 
-fn crc_kind<const MTU: usize>(last_frame_data_len: usize) -> CRCKind {
+fn crc_kind<const MTU: usize>(payload_remainder: usize) -> CRCKind {
     // TODO: Cannot match here because of pattern restriction for constants and
     // expressions. There might be a way to do this remember to check when
     // possible.
-    let remaining_space = MTU - last_frame_data_len - 1;
-    if remaining_space == MTU - 1 {
+
+    let remaining_space = MTU - payload_remainder - 1;
+    if remaining_space == 0 || payload_remainder == 0 {
         CRCKind::Isolated
     } else if remaining_space == 1 {
         CRCKind::HalfEmbedded
-    } else if (2..=(MTU - 3)).contains(&remaining_space) {
+    } else if (2..=MTU).contains(&remaining_space) {
         CRCKind::Embedded
     } else {
-        panic!(
+        core::panic!(
             "CRCKind is unknown. This should not happen. \
             Are you sure that this function was called with \
             the length of the last data frame in the transfer?"
