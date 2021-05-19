@@ -13,11 +13,12 @@ use uavcan::{CanFrame, CLASSIC_MTU};
 struct ClassicFrame {
     data: [u8; 8],
     id: u32,
+    len: usize,
 }
 
-impl From<(u32, [u8; 8])> for ClassicFrame {
-    fn from((id, data): (u32, [u8; 8])) -> Self {
-        Self { data, id }
+impl From<(u32, [u8; 8], usize)> for ClassicFrame {
+    fn from((id, data, len): (u32, [u8; 8], usize)) -> Self {
+        Self { data, id, len }
     }
 }
 
@@ -28,7 +29,7 @@ impl From<CANFrame> for ClassicFrame {
         let mut data = [0u8; 8];
         data[..original_data.len()].copy_from_slice(original_data);
 
-        Self::from((id, data))
+        Self::from((id, data, original_data.len()))
     }
 }
 
@@ -37,8 +38,8 @@ impl CanFrame<CLASSIC_MTU> for ClassicFrame {
         self.id
     }
 
-    fn payload(&self) -> &[u8; CLASSIC_MTU] {
-        &self.data
+    fn payload(&self) -> (&[u8; CLASSIC_MTU], usize) {
+        (&self.data, self.len)
     }
 }
 
@@ -48,8 +49,9 @@ impl CanWriter<ClassicFrame, CLASSIC_MTU> for CanTx {
     type Error = std::io::Error;
 
     fn write_frame(&mut self, frame: ClassicFrame) -> Result<(), Self::Error> {
+        let (payload, payload_len) = frame.payload();
         self.0
-            .write_frame(&CANFrame::new(frame.id(), frame.payload(), false, false).unwrap())
+            .write_frame(&CANFrame::new(frame.id(), &payload[..payload_len], false, false).unwrap())
     }
 }
 
