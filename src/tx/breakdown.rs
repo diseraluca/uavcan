@@ -6,7 +6,7 @@
 // frame even when enough space for it was available. This is now changed but
 // the code was a bit tight and has now some replication that should be removed.
 
-use core::{marker::PhantomData, panic, slice::ChunksExact};
+use core::{marker::PhantomData, slice::ChunksExact};
 
 use crc_any::CRCu16;
 
@@ -34,6 +34,21 @@ pub fn breakdown_kind_for_payload<const MTU: usize>(payload: &[u8]) -> Breakdown
     }
 }
 
+/// Describes the possible positions of the crc in a multi frame transfer.
+///
+/// During a multi frame transfer the crc may be positioned in three different
+/// ways depending on the amount of data to send and the MTU of the transfer.
+///
+/// We call a crc `Isolated`, when it is sent as the only data ( excluded the
+/// tail byte ) in last frame of the transfer.
+///
+/// We call a crc `HalfEmbedded`, when its LSB is positioned as the last
+/// non-tail byte in the second to last frame that is sent and its MSB is
+/// positioned as the only data ( excluded the tail byte ) of the last frame of
+/// the transfer.
+///
+/// We call a crc `Embedded`, when it occupies the last two non-tail-bytes in
+/// the last frame of the transfer.
 #[derive(Debug)]
 pub enum CRCKind {
     Embedded,
@@ -41,19 +56,57 @@ pub enum CRCKind {
     Isolated,
 }
 
-fn crc_kind<const MTU: usize>(last_frame_data_len: usize) -> CRCKind {
+
+/// Identifies the position of the crc in a multi frame transfer.
+///
+/// `payload_remainder` represents the remainder of the division between the
+/// length of the payload of the transfer and the MTU with the space for the
+/// tail byte removed (MTU-1).
+///
+/// For example, if the MTU is 8, each frame will contain 7 bytes of data and a tail byte.
+/// If a payload of length 9 is to be transferred, the first 7 bytes will be
+/// positioned on a frame, and the remainder of two bytes will occupy the first two bytes of another frame.
+///
+/// If, for example, a payload, with length N that is a multiple of (MTU-1) is
+/// to be sent, exactly (N/(MTU-1)) fully occupied frames will need to be made
+/// to sent the whole payload.
+///
+/// Each multi frame transfer has to be ended with a two bytes crc of the payload data.
+/// Those bytes may thus occupy three different positions:
+///
+/// They may be embedded into the last frame containing some of the payload
+/// data. This happens when the difference between (MTU-1) and the remainder of
+/// the payload is at least 2; that is, when at least two bytes of data are
+/// available after filling the frame with the payload data.
+///
+/// The first byte may be embedded in the last frame containing some of the
+/// payload data and the second byte into a frame of its own. This happens when
+/// the difference between (MTU-1) and the remainder of the payload is exactly
+/// 1; that is, there is at only on byte of data available in after filling the
+/// frame with the payload data.
+///
+/// Both bytes are embedded on their own frame. This happens when there is no
+/// remainder; that is, when there is no available space in the last frame
+/// containing some of the payload data after filling it with the payload data.
+///
+/// This function returns an identifier describing which of the three case of
+/// crc positioning should be used, based on the remainder that is provided.
+///
+/// See [CRCKind] for a description of the meaning of the identifier returned by [crc_kind].
+fn crc_kind<const MTU: usize>(payload_remainder: usize) -> CRCKind {
     // TODO: Cannot match here because of pattern restriction for constants and
     // expressions. There might be a way to do this remember to check when
     // possible.
-    let remaining_space = MTU - last_frame_data_len - 1;
-    if remaining_space == MTU - 1 {
+
+    let remaining_space = MTU - payload_remainder - 1;
+    if remaining_space == 0 || payload_remainder == 0 {
         CRCKind::Isolated
     } else if remaining_space == 1 {
         CRCKind::HalfEmbedded
-    } else if (2..=(MTU - 3)).contains(&remaining_space) {
+    } else if (2..=MTU).contains(&remaining_space) {
         CRCKind::Embedded
     } else {
-        panic!(
+        core::panic!(
             "CRCKind is unknown. This should not happen. \
             Are you sure that this function was called with \
             the length of the last data frame in the transfer?"
@@ -217,5 +270,47 @@ impl<'a, Frame: CanFrame<MTU>, const MTU: usize> Iterator for Breakdown<'a, Fram
             BreakdownState::MultiFrameHalfCRC => Some(self.build_half_crc()),
             BreakdownState::Closed => None,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use proptest::prelude::*;
+    extern crate std;
+
+    use crate::CLASSIC_MTU;
+
+    proptest! {
+        #[test]
+        fn the_crc_is_to_be_embedded_when_the_last_frame_of_the_payload_has_at_least_three_available_bytes(last_frame_data_len in 1..CLASSIC_MTU-3 ) {
+            prop_assert!(matches!(crc_kind::<CLASSIC_MTU>(last_frame_data_len), CRCKind::Embedded))
+        }
+    }
+
+    #[test]
+    fn the_crc_is_to_be_half_embedded_when_the_last_frame_of_the_payload_has_exactly_two_available_bytes() {
+        assert!(matches!(crc_kind::<CLASSIC_MTU>(CLASSIC_MTU - 2), CRCKind::HalfEmbedded))
+    }
+
+    proptest! {
+        #[test]
+        fn the_crc_is_to_be_isolated_when_the_last_frame_of_the_payload_has_less_than_two_available_bytes(last_frame_data_len in CLASSIC_MTU-1..CLASSIC_MTU) {
+            prop_assert!(matches!(crc_kind::<CLASSIC_MTU>(last_frame_data_len), CRCKind::Isolated))
+        }
+    }
+
+    // TODO: This test is not actually meaningful considering the specification
+    // of the kind of the crc as `depending on the available bytes in the last
+    // frame of the payload.`
+    // If the "last frame of the payload" has no payload data, that frame wouldn't exist at all.
+    // This inconsistencies comes from the specific implementation of `crc_kind` as based on the
+    // `remainder of the payload length divided by the amount of space available for each frame`,
+    // which is needed to slot it more easily into the way that breakdown is built ( specifically the use of chunks ).
+    // Either reform the tests to be a specification of this implemented behavior or change the implementation to
+    // respect the specification of the tests which should render this test meaningless.
+    #[test]
+    fn the_crc_is_to_be_isolated_when_the_last_frame_of_the_payload_has_a_length_of_0() {
+        assert!(matches!(crc_kind::<CLASSIC_MTU>(0), CRCKind::Isolated))
     }
 }
