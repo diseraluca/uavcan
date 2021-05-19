@@ -34,6 +34,21 @@ pub fn breakdown_kind_for_payload<const MTU: usize>(payload: &[u8]) -> Breakdown
     }
 }
 
+/// Describes the possible positions of the crc in a multi frame transfer.
+///
+/// During a multi frame transfer the crc may be positioned in three different
+/// ways depending on the amount of data to send and the MTU of the transfer.
+///
+/// We call a crc `Isolated`, when it is sent as the only data ( excluded the
+/// tail byte ) in last frame of the transfer.
+///
+/// We call a crc `HalfEmbedded`, when its LSB is positioned as the last
+/// non-tail byte in the second to last frame that is sent and its MSB is
+/// positioned as the only data ( excluded the tail byte ) of the last frame of
+/// the transfer.
+///
+/// We call a crc `Embedded`, when it occupies the last two non-tail-bytes in
+/// the last frame of the transfer.
 #[derive(Debug)]
 pub enum CRCKind {
     Embedded,
@@ -41,6 +56,43 @@ pub enum CRCKind {
     Isolated,
 }
 
+
+/// Identifies the position of the crc in a multi frame transfer.
+///
+/// `payload_remainder` represents the remainder of the division between the
+/// length of the payload of the transfer and the MTU with the space for the
+/// tail byte removed (MTU-1).
+///
+/// For example, if the MTU is 8, each frame will contain 7 bytes of data and a tail byte.
+/// If a payload of length 9 is to be transferred, the first 7 bytes will be
+/// positioned on a frame, and the remainder of two bytes will occupy the first two bytes of another frame.
+///
+/// If, for example, a payload, with length N that is a multiple of (MTU-1) is
+/// to be sent, exactly (N/(MTU-1)) fully occupied frames will need to be made
+/// to sent the whole payload.
+///
+/// Each multi frame transfer has to be ended with a two bytes crc of the payload data.
+/// Those bytes may thus occupy three different positions:
+///
+/// They may be embedded into the last frame containing some of the payload
+/// data. This happens when the difference between (MTU-1) and the remainder of
+/// the payload is at least 2; that is, when at least two bytes of data are
+/// available after filling the frame with the payload data.
+///
+/// The first byte may be embedded in the last frame containing some of the
+/// payload data and the second byte into a frame of its own. This happens when
+/// the difference between (MTU-1) and the remainder of the payload is exactly
+/// 1; that is, there is at only on byte of data available in after filling the
+/// frame with the payload data.
+///
+/// Both bytes are embedded on their own frame. This happens when there is no
+/// remainder; that is, when there is no available space in the last frame
+/// containing some of the payload data after filling it with the payload data.
+///
+/// This function returns an identifier describing which of the three case of
+/// crc positioning should be used, based on the remainder that is provided.
+///
+/// See [CRCKind] for a description of the meaning of the identifier returned by [crc_kind].
 fn crc_kind<const MTU: usize>(payload_remainder: usize) -> CRCKind {
     // TODO: Cannot match here because of pattern restriction for constants and
     // expressions. There might be a way to do this remember to check when
