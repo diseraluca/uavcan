@@ -242,7 +242,7 @@ impl<'a, Frame: CanFrame<MTU>, const MTU: usize> Breakdown<'a, Frame, MTU> {
 
         build_frame(
             self.can_id,
-            &self.crc.get_crc().to_be_bytes()[..1],
+            &self.crc.get_crc().to_be_bytes()[1..],
             self.tail_byte,
         )
     }
