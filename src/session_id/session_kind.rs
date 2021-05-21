@@ -117,3 +117,27 @@ pub mod strategy {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use super::strategy::session_kind;
+    use super::super::transfer_priority::strategy::transfer_priority;
+    use proptest::prelude::*;
+
+    extern crate std;
+    use std::format;
+
+    proptest! {
+        #[test]
+        fn converting_a_session_kind_to_a_number_and_then_back_preserves_it(
+            original_session_kind in session_kind(),
+            priority in transfer_priority()
+        ) {
+            let session_id = SessionId::from(can_id_for_session_kind(original_session_kind, priority));
+            let restored_session_kind = SessionKind::from(session_id);
+
+            prop_assert!(restored_session_kind == original_session_kind);
+        }
+    }
+}
