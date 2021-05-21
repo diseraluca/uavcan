@@ -47,13 +47,20 @@ impl From<SessionId> for SessionKind {
                 if service.is_request() {
                     SessionKind::Request(request)
                 } else {
-                    SessionKind::Response(request)
+                    SessionKind::Response(Request{
+                        source_node_id: request.destination_node_id,
+                        destination_node_id: request.source_node_id,
+                        ..request
+                    })
                 }
             }
         }
     }
 }
 
+// TODO: It might be better to have a SessionKind contain the priority itself.
+// If that is done, then this function should be converted to a
+// `From<SessionKind>` implementation for `u32`.
 pub fn can_id_for_session_kind(kind: SessionKind, priority: TransferPriority) -> u32 {
     match kind {
         SessionKind::Message {
