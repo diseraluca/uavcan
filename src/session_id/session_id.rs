@@ -25,14 +25,21 @@ impl From<u32> for SessionId {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//     #[test]
-//     fn building_a_session_id_from_a_number_with_the_25th_bit_not_set_provides_a_message() {
-//         let id = SessionId::try_from(0u32).unwrap();
+    #[test]
+    fn a_can_id_with_the_26th_bit_not_set_is_a_message() {
+        let id = SessionId::from(0u32);
 
-//         assert!(matches!(id, SessionId::Message(_)))
-//     }
-// }
+        assert!(matches!(id, SessionId::Message(_)))
+    }
+
+    #[test]
+    fn a_can_id_with_the_26th_bit_set_is_an_rpc() {
+        let id = SessionId::from(1u32 << 25);
+
+        assert!(matches!(id, SessionId::Rpc(_)))
+    }
+}
