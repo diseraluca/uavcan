@@ -1,5 +1,4 @@
-use super::{error::InvalidRepresentation, message::MessageSessionId, service::ServiceSessionId};
-use core::convert::TryFrom;
+use super::{message::MessageSessionId, service::ServiceSessionId};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SessionId {
@@ -16,27 +15,31 @@ impl SessionId {
     }
 }
 
-impl TryFrom<u32> for SessionId {
-    type Error = InvalidRepresentation;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        let is_service = (value >> 25) & 1;
-        match is_service {
-            0 => Ok(SessionId::Message(MessageSessionId::from(value))),
-            0 => Ok(SessionId::Rpc(ServiceSessionId::from(value))),
-            _ => panic!("Error in the bit pattern when converting a u32 to a session id. This shouldn't happen, a logic bug may be in place.")
+impl From<u32> for SessionId {
+    fn from(value: u32) -> Self {
+        if ((value >> 25) & 1) == 0 {
+            SessionId::Message(MessageSessionId::from(value))
+        } else {
+            SessionId::Rpc(ServiceSessionId::from(value))
         }
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//     #[test]
-//     fn building_a_session_id_from_a_number_with_the_25th_bit_not_set_provides_a_message() {
-//         let id = SessionId::try_from(0u32).unwrap();
+    #[test]
+    fn a_can_id_with_the_26th_bit_not_set_is_a_message() {
+        let id = SessionId::from(0u32);
 
-//         assert!(matches!(id, SessionId::Message(_)))
-//     }
-// }
+        assert!(matches!(id, SessionId::Message(_)))
+    }
+
+    #[test]
+    fn a_can_id_with_the_26th_bit_set_is_an_rpc() {
+        let id = SessionId::from(1u32 << 25);
+
+        assert!(matches!(id, SessionId::Rpc(_)))
+    }
+}

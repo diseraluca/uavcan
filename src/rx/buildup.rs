@@ -1,5 +1,5 @@
 use core::{
-    convert::{TryFrom, TryInto},
+    convert::TryInto,
     marker::PhantomData,
 };
 use crc_any::CRCu16;
@@ -69,7 +69,7 @@ impl<Frame: CanFrame<MTU>, Capacity: ArrayLength<u8>, const MTU: usize>
     }
 
     pub fn push(&mut self, frame: Frame) -> Result<BuildupState, Error<Frame, MTU>> {
-        let session_id = SessionId::try_from(frame.id()).map_err(|_| Error::CorruptedId)?;
+        let session_id = SessionId::from(frame.id());
         session_id
             .is_valid()
             .then(|| ())
