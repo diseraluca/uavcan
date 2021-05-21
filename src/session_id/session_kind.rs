@@ -47,13 +47,20 @@ impl From<SessionId> for SessionKind {
                 if service.is_request() {
                     SessionKind::Request(request)
                 } else {
-                    SessionKind::Response(request)
+                    SessionKind::Response(Request{
+                        source_node_id: request.destination_node_id,
+                        destination_node_id: request.source_node_id,
+                        ..request
+                    })
                 }
             }
         }
     }
 }
 
+// TODO: It might be better to have a SessionKind contain the priority itself.
+// If that is done, then this function should be converted to a
+// `From<SessionKind>` implementation for `u32`.
 pub fn can_id_for_session_kind(kind: SessionKind, priority: TransferPriority) -> u32 {
     match kind {
         SessionKind::Message {
@@ -107,6 +114,30 @@ pub mod strategy {
     prop_compose! {
         pub fn request()(source in node_id(), destination in node_id(), service in service_id()) -> Request {
             Request::new(source, destination, service)
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use super::strategy::session_kind;
+    use super::super::transfer_priority::strategy::transfer_priority;
+    use proptest::prelude::*;
+
+    extern crate std;
+    use std::format;
+
+    proptest! {
+        #[test]
+        fn converting_a_session_kind_to_a_number_and_then_back_preserves_it(
+            original_session_kind in session_kind(),
+            priority in transfer_priority()
+        ) {
+            let session_id = SessionId::from(can_id_for_session_kind(original_session_kind, priority));
+            let restored_session_kind = SessionKind::from(session_id);
+
+            prop_assert!(restored_session_kind == original_session_kind);
         }
     }
 }
