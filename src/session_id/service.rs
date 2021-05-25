@@ -58,7 +58,7 @@ impl ServiceSessionId {
     }
 }
 
-#[cfg(any(debug_assertions, test))]
+#[cfg(test)]
 pub mod strategy {
     use super::super::node_id::strategy::node_id;
     use super::super::service_id::strategy::service_id;
