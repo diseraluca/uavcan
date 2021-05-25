@@ -43,7 +43,7 @@ impl MessageSessionId {
     }
 }
 
-#[cfg(any(debug_assertions, test))]
+#[cfg(test)]
 pub mod strategy {
     use super::super::node_id::strategy::node_id;
     use super::super::subject_id::strategy::subject_id;

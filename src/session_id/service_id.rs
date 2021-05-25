@@ -18,7 +18,7 @@ impl TryFrom<u16> for ServiceId {
     }
 }
 
-#[cfg(any(debug_assertions, test))]
+#[cfg(test)]
 pub mod strategy {
     use super::*;
     use proptest::prop_compose;

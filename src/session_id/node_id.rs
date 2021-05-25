@@ -18,7 +18,7 @@ impl TryFrom<u8> for NodeId {
     }
 }
 
-#[cfg(any(debug_assertions, test))]
+#[cfg(test)]
 pub mod strategy {
     use super::*;
     use proptest::prop_compose;

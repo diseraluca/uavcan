@@ -38,7 +38,7 @@ impl core::convert::TryFrom<u8> for TransferPriority {
     }
 }
 
-#[cfg(any(debug_assertions, test))]
+#[cfg(test)]
 pub mod strategy {
     use super::*;
     use proptest::{
