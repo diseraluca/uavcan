@@ -13,8 +13,10 @@ pub struct ServiceSessionId {
     pub service_id: ServiceId,
     reserved23: B1,
     pub is_request: bool,
+    #[skip(getters)]
     is_service: bool,
     #[bits = 3]
+    #[skip(getters)]
     priority: TransferPriority,
     #[skip]
     __: B3,

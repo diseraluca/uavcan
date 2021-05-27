@@ -10,12 +10,17 @@ pub struct MessageSessionId {
     reserved7: B1,
     #[bits = 13]
     pub subject_id: SubjectId,
+    #[skip(getters)]
     reserved21: B1,
+    #[skip(getters)]
     reserved22: B1,
+    #[skip(setters)]
     reserved23: B1,
+    #[skip(getters)]
     is_anonymous: bool,
     pub is_service: bool,
     #[bits = 3]
+    #[skip(getters)]
     priority: TransferPriority,
     #[skip]
     __: B3,
