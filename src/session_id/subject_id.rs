@@ -5,6 +5,7 @@ use modular_bitfield::prelude::*;
 #[bitfield(bits = 13)]
 #[derive(BitfieldSpecifier, Debug, Copy, Clone, PartialEq, Eq)]
 pub struct SubjectId {
+    #[skip(getters)]
     id: B13,
 }
 
