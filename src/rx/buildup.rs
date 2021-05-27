@@ -47,7 +47,6 @@ pub struct Buildup<Frame: CanFrame<MTU>, Capacity: ArrayLength<u8>, const MTU: u
     session_id: SessionId,
     state: BuildupState,
     tail_byte: TailByte,
-    crc: CRCu16,
     _frame_marker: PhantomData<Frame>,
 }
 
@@ -63,7 +62,6 @@ impl<Frame: CanFrame<MTU>, Capacity: ArrayLength<u8>, const MTU: usize>
             session_id: SessionId::Message(MessageSessionId::new()),
             state: BuildupState::Initializing,
             tail_byte: TailByte::new(),
-            crc: CRCu16::crc16ccitt_false(),
             _frame_marker: PhantomData,
         }
     }
@@ -94,16 +92,11 @@ impl<Frame: CanFrame<MTU>, Capacity: ArrayLength<u8>, const MTU: usize>
         let (data, tail_byte) = TailByte::split_from(frame.payload());
         let payload_kind = tail_byte.payload_kind();
 
-        // println!("Received Frame {:?}", frame);
-        // println!("Kind is {:?}", payload_kind);
-        // println!("State is {:?}", self.state);
-
         match (self.state, payload_kind) {
             (BuildupState::Initializing, PayloadKind::StartOfMultiFrame) => {
                 self.populate_first_frame(data, session_id)?;
 
                 self.tail_byte = tail_byte;
-                // self.crc.digest(data);
 
                 Ok(BuildupState::MultiFrame)
             }
@@ -119,7 +112,6 @@ impl<Frame: CanFrame<MTU>, Capacity: ArrayLength<u8>, const MTU: usize>
                 self.ensure_multiframe_integrity(session_id, tail_byte)?;
 
                 self.save_payload(data)?;
-                // self.crc.digest(data);
 
                 Ok(BuildupState::MultiFrame)
             }
