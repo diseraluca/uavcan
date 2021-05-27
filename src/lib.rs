@@ -1,3 +1,5 @@
+#![no_std]
+
 pub mod rx;
 pub mod session_id;
 pub mod tail_byte;

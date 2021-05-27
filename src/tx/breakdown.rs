@@ -277,7 +277,9 @@ impl<'a, Frame: CanFrame<MTU>, const MTU: usize> Iterator for Breakdown<'a, Fram
 mod tests {
     use super::*;
     use proptest::prelude::*;
+
     extern crate std;
+    use std::format;
 
     use crate::CLASSIC_MTU;
 
