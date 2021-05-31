@@ -6,7 +6,7 @@ edition = "2018"
 resolver = "2"
 
 [dependencies]
-modular-bitfield = { git = "https://github.com/diseraluca/modular-bitfield" }
+modular-bitfield = { git = "https://github.com/diseraluca/modular-bitfield", branch = "removes_the_unneccesary_braces_in_from_implementations"}
 heapless = "0.6"
 crc-any = { version = "2.3", default-features = false }
 
