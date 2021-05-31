@@ -230,7 +230,7 @@ mod tests {
     fn the_successor_of_a_tail_byte_has_the_same_transfer_id_as_the_original_tail_byte(
     ) {
         let mut tail_byte = TailByte::start_of_multi_frame(TransferId::try_from(0).unwrap());
-        let mut original_transfer_id = tail_byte.transfer_id();
+        let original_transfer_id = tail_byte.transfer_id();
 
         tail_byte.advance();
 

@@ -1,6 +1,7 @@
 use super::{node_id::NodeId, subject_id::SubjectId, transfer_priority::TransferPriority};
 use modular_bitfield::prelude::*;
 
+#[cfg_eval]
 #[bitfield]
 #[repr(u32)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -20,7 +21,7 @@ pub struct MessageSessionId {
     is_anonymous: bool,
     pub is_service: bool,
     #[bits = 3]
-    #[skip(getters)]
+    #[cfg_attr(not(test), skip(getters))]
     priority: TransferPriority,
     #[skip]
     __: B3,
