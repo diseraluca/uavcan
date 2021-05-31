@@ -1,4 +1,5 @@
 #![no_std]
+#![feature(cfg_eval)]
 
 pub mod rx;
 pub mod session_id;
