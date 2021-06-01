@@ -1,5 +1,5 @@
 #![allow(incomplete_features)]
-#![deny(noop_method_call, single_use_lifetimes, unreachable_pub, unsafe_code, unsafe_op_in_unsafe_fn, unused_import_braces, unused_lifetimes)]
+#![deny(noop_method_call, single_use_lifetimes, unreachable_pub, unsafe_code, unsafe_op_in_unsafe_fn, unused_import_braces, unused_lifetimes, warnings)]
 
 #![no_std]
 #![feature(cfg_eval)]
