@@ -47,7 +47,7 @@ impl From<SessionId> for SessionKind {
                 if service.is_request() {
                     SessionKind::Request(request)
                 } else {
-                    SessionKind::Response(Request{
+                    SessionKind::Response(Request {
                         source_node_id: request.destination_node_id,
                         destination_node_id: request.source_node_id,
                         ..request
@@ -120,9 +120,9 @@ pub mod strategy {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use super::strategy::session_kind;
     use super::super::transfer_priority::strategy::transfer_priority;
+    use super::strategy::session_kind;
+    use super::*;
     use proptest::prelude::*;
 
     extern crate std;

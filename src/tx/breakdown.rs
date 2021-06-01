@@ -56,7 +56,6 @@ pub enum CRCKind {
     Isolated,
 }
 
-
 /// Identifies the position of the crc in a multi frame transfer.
 ///
 /// `payload_remainder` represents the remainder of the division between the
@@ -291,8 +290,12 @@ mod tests {
     }
 
     #[test]
-    fn the_crc_is_to_be_half_embedded_when_the_last_frame_of_the_payload_has_exactly_two_available_bytes() {
-        assert!(matches!(crc_kind::<CLASSIC_MTU>(CLASSIC_MTU - 2), CRCKind::HalfEmbedded))
+    fn the_crc_is_to_be_half_embedded_when_the_last_frame_of_the_payload_has_exactly_two_available_bytes(
+    ) {
+        assert!(matches!(
+            crc_kind::<CLASSIC_MTU>(CLASSIC_MTU - 2),
+            CRCKind::HalfEmbedded
+        ))
     }
 
     proptest! {
