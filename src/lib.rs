@@ -1,6 +1,6 @@
 #![no_std]
 #![feature(cfg_eval)]
-#![deny(noop_method_call)]
+#![deny(noop_method_call, single_use_lifetimes)]
 
 pub mod rx;
 pub mod session_id;
@@ -72,12 +72,11 @@ mod tests {
     }
 
     impl<
-            'a,
         Frame: CanFrame<MTU>,
         Capacity: ArrayLength<Transfer<TransferCapacity>>,
         TransferCapacity: ArrayLength<u8>,
         const MTU: usize,
-        > CanWriter<Frame, MTU> for TxRxGlue<'a, Frame, Capacity, TransferCapacity, MTU>
+        > CanWriter<Frame, MTU> for TxRxGlue<'_, Frame, Capacity, TransferCapacity, MTU>
     {
         type Error = RxError<Frame, MTU>;
 
