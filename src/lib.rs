@@ -1,6 +1,6 @@
 #![no_std]
 #![feature(cfg_eval)]
-#![deny(noop_method_call, single_use_lifetimes, unreachable_pub)]
+#![deny(noop_method_call, single_use_lifetimes, unreachable_pub, unsafe_code)]
 
 pub mod rx;
 pub mod session_id;
