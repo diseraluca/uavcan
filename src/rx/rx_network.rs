@@ -82,12 +82,11 @@ impl<
 }
 
 impl<
-        'a,
         Frame: CanFrame<MTU>,
         Capacity: ArrayLength<Transfer<TransferCapacity>>,
         TransferCapacity: ArrayLength<u8>,
         const MTU: usize,
-    > Iterator for RxConsumer<'a, Frame, Capacity, TransferCapacity, MTU>
+    > Iterator for RxConsumer<'_, Frame, Capacity, TransferCapacity, MTU>
 {
     type Item = Transfer<TransferCapacity>;
 
@@ -97,12 +96,11 @@ impl<
 }
 
 impl<
-        'a,
         Frame: CanFrame<MTU>,
         Capacity: ArrayLength<Transfer<TransferCapacity>>,
         TransferCapacity: ArrayLength<u8>,
         const MTU: usize,
-    > RxProducer<'a, Frame, Capacity, TransferCapacity, MTU>
+    > RxProducer<'_, Frame, Capacity, TransferCapacity, MTU>
 {
     pub fn receive(&mut self, frame: Frame) -> Result<(), RxError<Frame, MTU>> {
         // println!("Received frame {:?}", frame);

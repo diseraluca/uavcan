@@ -1,3 +1,6 @@
+#![allow(incomplete_features)]
+#![deny(noop_method_call, single_use_lifetimes, unreachable_pub, unsafe_code, unsafe_op_in_unsafe_fn, unused_import_braces, unused_lifetimes, warnings)]
+
 #![no_std]
 #![feature(cfg_eval)]
 
@@ -38,7 +41,7 @@ mod tests {
     use std::format;
 
     #[derive(Debug)]
-    pub struct ClassicFrame {
+    pub(super) struct ClassicFrame {
         data: [u8; 8],
         id: u32,
         len: usize,
@@ -60,23 +63,22 @@ mod tests {
         }
     }
 
-    pub struct TxRxGlue<
+    pub(super) struct TxRxGlue<
             'a,
         Frame: CanFrame<MTU>,
         Capacity: ArrayLength<Transfer<TransferCapacity>>,
         TransferCapacity: ArrayLength<u8>,
         const MTU: usize,
         > {
-        pub rx_producer: RxProducer<'a, Frame, Capacity, TransferCapacity, MTU>,
+        pub(super) rx_producer: RxProducer<'a, Frame, Capacity, TransferCapacity, MTU>,
     }
 
     impl<
-            'a,
         Frame: CanFrame<MTU>,
         Capacity: ArrayLength<Transfer<TransferCapacity>>,
         TransferCapacity: ArrayLength<u8>,
         const MTU: usize,
-        > CanWriter<Frame, MTU> for TxRxGlue<'a, Frame, Capacity, TransferCapacity, MTU>
+        > CanWriter<Frame, MTU> for TxRxGlue<'_, Frame, Capacity, TransferCapacity, MTU>
     {
         type Error = RxError<Frame, MTU>;
 
