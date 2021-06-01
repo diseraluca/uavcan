@@ -1,5 +1,6 @@
 #![no_std]
 #![feature(cfg_eval)]
+#![deny(noop_method_call)]
 
 pub mod rx;
 pub mod session_id;
