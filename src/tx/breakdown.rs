@@ -260,7 +260,7 @@ impl<'a, Frame: CanFrame<MTU>, const MTU: usize> Breakdown<'a, Frame, MTU> {
     }
 }
 
-impl<'a, Frame: CanFrame<MTU>, const MTU: usize> Iterator for Breakdown<'a, Frame, MTU> {
+impl<Frame: CanFrame<MTU>, const MTU: usize> Iterator for Breakdown<'_, Frame, MTU> {
     type Item = Frame;
 
     fn next(&mut self) -> Option<Self::Item> {
