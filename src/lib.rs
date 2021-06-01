@@ -1,6 +1,6 @@
 #![no_std]
 #![feature(cfg_eval)]
-#![deny(noop_method_call, single_use_lifetimes)]
+#![deny(noop_method_call, single_use_lifetimes, unreachable_pub)]
 
 pub mod rx;
 pub mod session_id;
@@ -39,7 +39,7 @@ mod tests {
     use std::format;
 
     #[derive(Debug)]
-    pub struct ClassicFrame {
+    pub(super) struct ClassicFrame {
         data: [u8; 8],
         id: u32,
         len: usize,
@@ -61,14 +61,14 @@ mod tests {
         }
     }
 
-    pub struct TxRxGlue<
+    pub(super) struct TxRxGlue<
             'a,
         Frame: CanFrame<MTU>,
         Capacity: ArrayLength<Transfer<TransferCapacity>>,
         TransferCapacity: ArrayLength<u8>,
         const MTU: usize,
         > {
-        pub rx_producer: RxProducer<'a, Frame, Capacity, TransferCapacity, MTU>,
+        pub(super) rx_producer: RxProducer<'a, Frame, Capacity, TransferCapacity, MTU>,
     }
 
     impl<
