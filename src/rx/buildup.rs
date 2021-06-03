@@ -1,7 +1,4 @@
-use core::{
-    convert::TryInto,
-    marker::PhantomData,
-};
+use core::{convert::TryInto, marker::PhantomData};
 use crc_any::CRCu16;
 use heapless::{ArrayLength, Vec};
 

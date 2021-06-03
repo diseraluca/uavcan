@@ -1,6 +1,14 @@
 #![allow(incomplete_features)]
-#![deny(noop_method_call, single_use_lifetimes, unreachable_pub, unsafe_code, unsafe_op_in_unsafe_fn, unused_import_braces, unused_lifetimes, warnings)]
-
+#![deny(
+    noop_method_call,
+    single_use_lifetimes,
+    unreachable_pub,
+    unsafe_code,
+    unsafe_op_in_unsafe_fn,
+    unused_import_braces,
+    unused_lifetimes,
+    warnings
+)]
 #![no_std]
 #![feature(cfg_eval)]
 
@@ -24,18 +32,27 @@ mod tests {
 
     use super::*;
     use super::{
-        rx::{rx_network::{RxNetwork, RxError, RxProducer}, transfer::Transfer},
+        rx::{
+            rx_network::{RxError, RxNetwork, RxProducer},
+            transfer::Transfer,
+        },
         session_id::{
             session_kind::strategy::session_kind, NodeId, SessionKind, SubjectId, TransferPriority,
         },
-        tx::{stream_transmitter::{StreamTransmitter, CanWriter}, transmitter::send},
+        tx::{
+            stream_transmitter::{CanWriter, StreamTransmitter},
+            transmitter::send,
+        },
         CLASSIC_MTU,
     };
 
-    use heapless::{ArrayLength, consts::{U512, U64}};
+    use heapless::{
+        consts::{U512, U64},
+        ArrayLength,
+    };
 
-    use proptest::prelude::*;
     use proptest::collection::vec;
+    use proptest::prelude::*;
 
     extern crate std;
     use std::format;
@@ -64,20 +81,20 @@ mod tests {
     }
 
     pub(super) struct TxRxGlue<
-            'a,
+        'a,
         Frame: CanFrame<MTU>,
         Capacity: ArrayLength<Transfer<TransferCapacity>>,
         TransferCapacity: ArrayLength<u8>,
         const MTU: usize,
-        > {
+    > {
         pub(super) rx_producer: RxProducer<'a, Frame, Capacity, TransferCapacity, MTU>,
     }
 
     impl<
-        Frame: CanFrame<MTU>,
-        Capacity: ArrayLength<Transfer<TransferCapacity>>,
-        TransferCapacity: ArrayLength<u8>,
-        const MTU: usize,
+            Frame: CanFrame<MTU>,
+            Capacity: ArrayLength<Transfer<TransferCapacity>>,
+            TransferCapacity: ArrayLength<u8>,
+            const MTU: usize,
         > CanWriter<Frame, MTU> for TxRxGlue<'_, Frame, Capacity, TransferCapacity, MTU>
     {
         type Error = RxError<Frame, MTU>;
