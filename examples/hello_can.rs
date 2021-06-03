@@ -113,7 +113,7 @@ fn main() {
     println!("Transmitter initialized.");
 
     println!("Initializing receiver network.");
-    let mut rx_network = RxNetwork::<ClassicFrame, U64, U512, CLASSIC_MTU>::new();
+    let mut rx_network = RxNetwork::<ClassicFrame, U64, U512, CLASSIC_MTU>::default();
     let (mut rx_producer, mut rx_consumer) = rx_network.split();
     println!("Receiver network initialized.");
 

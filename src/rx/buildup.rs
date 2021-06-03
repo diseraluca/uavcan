@@ -47,10 +47,10 @@ pub struct Buildup<Frame: CanFrame<MTU>, Capacity: ArrayLength<u8>, const MTU: u
     _frame_marker: PhantomData<Frame>,
 }
 
-impl<Frame: CanFrame<MTU>, Capacity: ArrayLength<u8>, const MTU: usize>
-    Buildup<Frame, Capacity, MTU>
+impl<Frame: CanFrame<MTU>, Capacity: ArrayLength<u8>, const MTU: usize> Default
+    for Buildup<Frame, Capacity, MTU>
 {
-    pub fn new() -> Self {
+    fn default() -> Self {
         Self {
             payload: Vec::new(),
             // TODO: Apart from documenting this the unintuitiveness of this
@@ -62,7 +62,11 @@ impl<Frame: CanFrame<MTU>, Capacity: ArrayLength<u8>, const MTU: usize>
             _frame_marker: PhantomData,
         }
     }
+}
 
+impl<Frame: CanFrame<MTU>, Capacity: ArrayLength<u8>, const MTU: usize>
+    Buildup<Frame, Capacity, MTU>
+{
     pub fn push(&mut self, frame: Frame) -> Result<BuildupState, Error<Frame, MTU>> {
         let session_id = SessionId::from(frame.id());
         session_id
