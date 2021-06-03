@@ -176,9 +176,9 @@ impl<Frame: CanFrame<MTU>, Capacity: ArrayLength<u8>, const MTU: usize>
     fn ensure_no_missing_frames(&self, transfer_id: TransferId) -> Result<(), Error<Frame, MTU>> {
         (self.tail_byte.get_transfer_id() == transfer_id)
             .then(|| ())
-            .ok_or(Error::MissingFrames(
-                self.tail_byte.get_transfer_id().difference(transfer_id),
-            ))
+            .ok_or_else(|| {
+                Error::MissingFrames(self.tail_byte.get_transfer_id().difference(transfer_id))
+            })
     }
 
     fn ensure_tail_byte(&self, tail_byte: TailByte) -> Result<(), Error<Frame, MTU>> {
@@ -199,7 +199,7 @@ impl<Frame: CanFrame<MTU>, Capacity: ArrayLength<u8>, const MTU: usize>
 
         (own_crc.get_crc() == crc)
             .then(|| ())
-            .ok_or(Error::WrongCRC(own_crc.get_crc(), crc))
+            .ok_or_else(|| Error::WrongCRC(own_crc.get_crc(), crc))
     }
 }
 
