@@ -68,11 +68,11 @@ impl<
         const MTU: usize,
     > RxNetwork<Frame, Capacity, TransferCapacity, MTU>
 {
-    pub fn split<'a>(
-        &'a mut self,
+    pub fn split(
+        &mut self,
     ) -> (
-        RxProducer<'a, Frame, Capacity, TransferCapacity, MTU>,
-        RxConsumer<'a, Frame, Capacity, TransferCapacity, MTU>,
+        RxProducer<Frame, Capacity, TransferCapacity, MTU>,
+        RxConsumer<Frame, Capacity, TransferCapacity, MTU>,
     ) {
         let (producer, consumer) = self.queue.split();
 
