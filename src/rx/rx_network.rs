@@ -114,7 +114,7 @@ impl<
         // println!("Received frame {:?}", frame);
         match self
             .buildup
-            .get_or_insert_with(|| Buildup::default())
+            .get_or_insert_with(Buildup::default)
             .push(frame)
         {
             Ok(BuildupState::Closed) => self

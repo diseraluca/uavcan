@@ -106,8 +106,8 @@ pub mod strategy {
                     subject_id,
                 }
             }),
-            request().prop_map(|request| SessionKind::Request(request)),
-            request().prop_map(|request| SessionKind::Response(request)),
+            request().prop_map(SessionKind::Request),
+            request().prop_map(SessionKind::Response),
         ]
     }
 
