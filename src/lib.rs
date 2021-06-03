@@ -1,4 +1,4 @@
-#![allow(incomplete_features)]
+#![allow(incomplete_features, clippy::module_inception)]
 #![deny(
     noop_method_call,
     single_use_lifetimes,
