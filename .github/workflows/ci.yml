@@ -1,0 +1,14 @@
+name: Continuos Integration
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  placeholder:
+    name: Placeholder
+    runs-on: ubuntu-latest
+    run: echo PLACEHOLDER
+
