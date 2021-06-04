@@ -23,12 +23,12 @@ pub struct ServiceSessionId {
 }
 
 impl ServiceSessionId {
-    pub fn request_as_u32(
+    pub fn request_from_base_parts(
         source_node_id: NodeId,
         destination_node_id: NodeId,
         service_id: ServiceId,
         priority: TransferPriority,
-    ) -> u32 {
+    ) -> Self {
         ServiceSessionId::new()
             .with_source_node_id(source_node_id)
             .with_destination_node_id(destination_node_id)
@@ -36,15 +36,14 @@ impl ServiceSessionId {
             .with_is_service(true)
             .with_is_request(true)
             .with_priority(priority)
-            .into()
     }
 
-    pub fn response_as_u32(
+    pub fn response_from_base_parts(
         source_node_id: NodeId,
         destination_node_id: NodeId,
         service_id: ServiceId,
         priority: TransferPriority,
-    ) -> u32 {
+    ) -> Self {
         ServiceSessionId::new()
             .with_source_node_id(source_node_id)
             .with_destination_node_id(destination_node_id)
@@ -52,7 +51,6 @@ impl ServiceSessionId {
             .with_is_service(true)
             .with_is_request(false)
             .with_priority(priority)
-            .into()
     }
 
     pub fn is_valid(&self) -> bool {
@@ -70,13 +68,13 @@ pub mod strategy {
 
     prop_compose! {
         pub fn request_session_id_as_u32()(source_node_id in node_id(), destination_node_id in node_id(), service_id in service_id(), transfer_priority in transfer_priority()) -> u32 {
-            ServiceSessionId::request_as_u32(source_node_id, destination_node_id, service_id, transfer_priority)
+            u32::from(ServiceSessionId::request_from_base_parts(source_node_id, destination_node_id, service_id, transfer_priority))
         }
     }
 
     prop_compose! {
         pub fn response_session_id_as_u32()(source_node_id in node_id(), destination_node_id in node_id(), service_id in service_id(), transfer_priority in transfer_priority()) -> u32 {
-            ServiceSessionId::response_as_u32(source_node_id, destination_node_id, service_id, transfer_priority)
+            u32::from(ServiceSessionId::response_from_base_parts(source_node_id, destination_node_id, service_id, transfer_priority))
         }
     }
 }
@@ -98,8 +96,8 @@ mod tests {
         #[test]
         fn a_service_session_id_has_its_27th_to_29th_bit_represent_the_transfer_priority(transfer_priority in transfer_priority()) {
             let (source_node_id, destination_node_id, service_id) = (NodeId::try_from(4).unwrap(), NodeId::try_from(7).unwrap(), ServiceId::try_from(10).unwrap());
-            let request_id = ServiceSessionId::request_as_u32(source_node_id, destination_node_id, service_id, transfer_priority);
-            let response_id = ServiceSessionId::response_as_u32(source_node_id, destination_node_id, service_id, transfer_priority);
+            let request_id = u32::from(ServiceSessionId::request_from_base_parts(source_node_id, destination_node_id, service_id, transfer_priority));
+            let response_id = u32::from(ServiceSessionId::response_from_base_parts(source_node_id, destination_node_id, service_id, transfer_priority));
 
             prop_assert_eq!(TransferPriority::try_from(((request_id >> 26) & 7)as u8).unwrap(), transfer_priority);
             prop_assert_eq!(TransferPriority::try_from(((response_id >> 26) & 7)as u8).unwrap(), transfer_priority);
@@ -140,8 +138,8 @@ mod tests {
         #[test]
         fn a_service_session_id_has_its_15th_to_23rd_bit_represent_the_service_id(service_id in service_id()) {
             let (source_node_id, destination_node_id, transfer_priority) = (NodeId::try_from(4).unwrap(), NodeId::try_from(7).unwrap(), TransferPriority::Immediate);
-            let request_id = ServiceSessionId::request_as_u32(source_node_id, destination_node_id, service_id, transfer_priority);
-            let response_id = ServiceSessionId::response_as_u32(source_node_id, destination_node_id, service_id, transfer_priority);
+            let request_id = u32::from(ServiceSessionId::request_from_base_parts(source_node_id, destination_node_id, service_id, transfer_priority));
+            let response_id = u32::from(ServiceSessionId::response_from_base_parts(source_node_id, destination_node_id, service_id, transfer_priority));
 
             prop_assert_eq!(ServiceId::try_from(((request_id >> 14) & 511)as u16).unwrap(), service_id);
             prop_assert_eq!(ServiceId::try_from(((response_id >> 14) & 511)as u16).unwrap(), service_id);
@@ -152,8 +150,8 @@ mod tests {
          #[test]
          fn a_service_session_id_has_its_8th_to_14th_bit_represent_the_service_id(destination_node_id in node_id()) {
              let (source_node_id, service_id, transfer_priority) = (NodeId::try_from(4).unwrap(), ServiceId::try_from(7).unwrap(), TransferPriority::Immediate);
-             let request_id = ServiceSessionId::request_as_u32(source_node_id, destination_node_id, service_id, transfer_priority);
-             let response_id = ServiceSessionId::response_as_u32(source_node_id, destination_node_id, service_id, transfer_priority);
+             let request_id = u32::from(ServiceSessionId::request_from_base_parts(source_node_id, destination_node_id, service_id, transfer_priority));
+             let response_id = u32::from(ServiceSessionId::response_from_base_parts(source_node_id, destination_node_id, service_id, transfer_priority));
 
              prop_assert_eq!(NodeId::try_from(((request_id >> 7) & 127)as u8).unwrap(), destination_node_id);
              prop_assert_eq!(NodeId::try_from(((response_id >> 7) & 127)as u8).unwrap(), destination_node_id);

@@ -66,27 +66,31 @@ pub fn can_id_for_session_kind(kind: SessionKind, priority: TransferPriority) ->
         SessionKind::Message {
             source_node_id,
             subject_id,
-        } => MessageSessionId::as_u32(source_node_id, subject_id, priority),
+        } => u32::from(MessageSessionId::from_base_parts(
+            source_node_id,
+            subject_id,
+            priority,
+        )),
         SessionKind::Request(Request {
             source_node_id,
             destination_node_id,
             service_id,
-        }) => ServiceSessionId::request_as_u32(
+        }) => u32::from(ServiceSessionId::request_from_base_parts(
             source_node_id,
             destination_node_id,
             service_id,
             priority,
-        ),
+        )),
         SessionKind::Response(Request {
             source_node_id,
             destination_node_id,
             service_id,
-        }) => ServiceSessionId::response_as_u32(
+        }) => u32::from(ServiceSessionId::response_from_base_parts(
             destination_node_id,
             source_node_id,
             service_id,
             priority,
-        ),
+        )),
     }
 }
 
@@ -106,8 +110,8 @@ pub mod strategy {
                     subject_id,
                 }
             }),
-            request().prop_map(|request| SessionKind::Request(request)),
-            request().prop_map(|request| SessionKind::Response(request)),
+            request().prop_map(SessionKind::Request),
+            request().prop_map(SessionKind::Response),
         ]
     }
 

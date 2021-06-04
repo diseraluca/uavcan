@@ -58,7 +58,7 @@ impl CanWriter<ClassicFrame, CLASSIC_MTU> for CanTx {
 fn transmit(
     transmitter: &mut StreamTransmitter<CanTx, ClassicFrame, CLASSIC_MTU>,
     node_id: NodeId,
-) -> () {
+) {
     println!("Building random payload for transmission.");
     let mut payload = [0u8; 64];
     rand::thread_rng().fill_bytes(&mut payload);
@@ -81,7 +81,7 @@ fn transmit(
 fn receive<'a>(
     rx_socket: &CANSocket,
     receiver: &mut RxProducer<'a, ClassicFrame, U64, U512, CLASSIC_MTU>,
-) -> () {
+) {
     println!("Looking for frames from socket.");
     while let Ok(frame) = rx_socket.read_frame() {
         println!("Found frame {:?}.", frame);
@@ -91,9 +91,9 @@ fn receive<'a>(
     }
 }
 
-fn process<'a>(receiver: &mut RxConsumer<'a, ClassicFrame, U64, U512, CLASSIC_MTU>) -> () {
+fn process(receiver: &mut RxConsumer<ClassicFrame, U64, U512, CLASSIC_MTU>) {
     println!("Looking for stored transfers.");
-    while let Some(transfer) = receiver.next() {
+    for transfer in receiver {
         println!("Found transfer {:?}", transfer);
     }
 }
@@ -113,7 +113,7 @@ fn main() {
     println!("Transmitter initialized.");
 
     println!("Initializing receiver network.");
-    let mut rx_network = RxNetwork::<ClassicFrame, U64, U512, CLASSIC_MTU>::new();
+    let mut rx_network = RxNetwork::<ClassicFrame, U64, U512, CLASSIC_MTU>::default();
     let (mut rx_producer, mut rx_consumer) = rx_network.split();
     println!("Receiver network initialized.");
 

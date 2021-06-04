@@ -181,7 +181,10 @@ impl<'a, Frame: CanFrame<MTU>, const MTU: usize> Breakdown<'a, Frame, MTU> {
     pub fn build_single_frame(&mut self) -> Frame {
         self.state = BreakdownState::Closed;
 
-        let payload = self.payload.next().unwrap_or(self.payload.remainder());
+        let payload = self
+            .payload
+            .next()
+            .unwrap_or_else(|| self.payload.remainder());
         build_frame(self.can_id, payload, self.tail_byte)
     }
 

@@ -28,11 +28,11 @@ pub struct MessageSessionId {
 }
 
 impl MessageSessionId {
-    pub fn as_u32(
+    pub fn from_base_parts(
         source_node_id: NodeId,
         subject_id: SubjectId,
         priority: TransferPriority,
-    ) -> u32 {
+    ) -> Self {
         MessageSessionId::new()
             .with_source_node_id(source_node_id)
             .with_subject_id(subject_id)
@@ -41,7 +41,6 @@ impl MessageSessionId {
             .with_is_anonymous(false)
             .with_is_service(false)
             .with_priority(priority)
-            .into()
     }
 
     pub fn is_valid(&self) -> bool {
@@ -59,7 +58,7 @@ pub mod strategy {
 
     prop_compose! {
         pub fn message_session_id_as_u32()(source_node_id in node_id(), subject_id in subject_id(), transfer_priority in transfer_priority()) -> u32 {
-            MessageSessionId::as_u32(source_node_id, subject_id, transfer_priority)
+            MessageSessionId::from_base_parts(source_node_id, subject_id, transfer_priority).into()
         }
     }
 }
@@ -80,7 +79,7 @@ mod tests {
     proptest! {
         #[test]
         fn a_message_session_id_has_its_27th_to_29th_bit_represent_the_transfer_priority(transfer_priority in transfer_priority()) {
-            let id = MessageSessionId::as_u32(NodeId::try_from(4).unwrap(), SubjectId::try_from(8).unwrap(), transfer_priority);
+            let id = u32::from(MessageSessionId::from_base_parts(NodeId::try_from(4).unwrap(), SubjectId::try_from(8).unwrap(), transfer_priority));
             prop_assert_eq!(TransferPriority::try_from(((id >> 26) & 7)as u8).unwrap(), transfer_priority);
         }
     }
@@ -116,7 +115,7 @@ mod tests {
     proptest! {
         #[test]
         fn a_message_session_id_has_its_9th_to_21st_bit_represent_the_subject_id(subject_id in subject_id()) {
-            let id = MessageSessionId::as_u32(NodeId::try_from(4).unwrap(), subject_id, TransferPriority::Immediate);
+            let id = u32::from(MessageSessionId::from_base_parts(NodeId::try_from(4).unwrap(), subject_id, TransferPriority::Immediate));
             prop_assert_eq!(SubjectId::try_from(((id >> 8) & 8191) as u16).unwrap(), subject_id);
         }
     }
@@ -131,7 +130,7 @@ mod tests {
     proptest! {
         #[test]
         fn a_message_session_id_has_its_first_7_bits_represent_the_node_id(node_id in node_id()) {
-            let id = MessageSessionId::as_u32(node_id, SubjectId::try_from(4).unwrap(), TransferPriority::Immediate);
+            let id = u32::from(MessageSessionId::from_base_parts(node_id, SubjectId::try_from(4).unwrap(), TransferPriority::Immediate));
             prop_assert_eq!(NodeId::try_from((id & 127) as u8).unwrap(), node_id);
         }
     }
@@ -142,7 +141,7 @@ mod tests {
             let subject_id = SubjectId::new();
             let transfer_priority = TransferPriority::High;
 
-            let as_u32 = MessageSessionId::as_u32(source_node_id, subject_id, transfer_priority);
+            let as_u32 = u32::from(MessageSessionId::from_base_parts(source_node_id, subject_id, transfer_priority));
             let message_session_id = MessageSessionId::from(as_u32);
 
             prop_assert_eq!(message_session_id.source_node_id(), source_node_id);
@@ -155,7 +154,7 @@ mod tests {
             let source_node_id = NodeId::new();
             let transfer_priority = TransferPriority::High;
 
-            let as_u32 = MessageSessionId::as_u32(source_node_id, subject_id, transfer_priority);
+            let as_u32 = u32::from(MessageSessionId::from_base_parts(source_node_id, subject_id, transfer_priority));
             let message_session_id = MessageSessionId::from(as_u32);
 
             prop_assert_eq!(message_session_id.subject_id(), subject_id);
@@ -168,7 +167,7 @@ mod tests {
             let source_node_id = NodeId::new();
             let subject_id = SubjectId::new();
 
-            let as_u32 = MessageSessionId::as_u32(source_node_id, subject_id, transfer_priority);
+            let as_u32 = u32::from(MessageSessionId::from_base_parts(source_node_id, subject_id, transfer_priority));
             let message_session_id = MessageSessionId::from(as_u32);
 
             prop_assert_eq!(message_session_id.priority(), transfer_priority);

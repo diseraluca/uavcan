@@ -51,20 +51,28 @@ impl<
         Capacity: ArrayLength<Transfer<TransferCapacity>>,
         TransferCapacity: ArrayLength<u8>,
         const MTU: usize,
-    > RxNetwork<Frame, Capacity, TransferCapacity, MTU>
+    > Default for RxNetwork<Frame, Capacity, TransferCapacity, MTU>
 {
-    pub fn new() -> Self {
+    fn default() -> Self {
         Self {
             queue: Queue::new(),
             _frame_marker: PhantomData,
         }
     }
+}
 
-    pub fn split<'a>(
-        &'a mut self,
+impl<
+        Frame: CanFrame<MTU>,
+        Capacity: ArrayLength<Transfer<TransferCapacity>>,
+        TransferCapacity: ArrayLength<u8>,
+        const MTU: usize,
+    > RxNetwork<Frame, Capacity, TransferCapacity, MTU>
+{
+    pub fn split(
+        &mut self,
     ) -> (
-        RxProducer<'a, Frame, Capacity, TransferCapacity, MTU>,
-        RxConsumer<'a, Frame, Capacity, TransferCapacity, MTU>,
+        RxProducer<Frame, Capacity, TransferCapacity, MTU>,
+        RxConsumer<Frame, Capacity, TransferCapacity, MTU>,
     ) {
         let (producer, consumer) = self.queue.split();
 
@@ -106,7 +114,7 @@ impl<
         // println!("Received frame {:?}", frame);
         match self
             .buildup
-            .get_or_insert_with(|| Buildup::new())
+            .get_or_insert_with(Buildup::default)
             .push(frame)
         {
             Ok(BuildupState::Closed) => self

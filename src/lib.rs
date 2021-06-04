@@ -1,4 +1,4 @@
-#![allow(incomplete_features)]
+#![allow(incomplete_features, clippy::module_inception)]
 #![deny(
     noop_method_call,
     single_use_lifetimes,
@@ -107,7 +107,7 @@ mod tests {
     proptest! {
         #[test]
         fn receiving_the_frames_of_a_transmission_rebuilds_the_original_payload(payload in vec(proptest::num::u8::ANY, 1..100)) {
-            let mut rx_network = RxNetwork::<ClassicFrame, U64, U512, CLASSIC_MTU>::new();
+            let mut rx_network = RxNetwork::<ClassicFrame, U64, U512, CLASSIC_MTU>::default();
             let (rx_producer, mut rx_consumer) = rx_network.split();
 
             let mut transmitter = StreamTransmitter::<TxRxGlue<ClassicFrame, U64, U512, CLASSIC_MTU>, ClassicFrame, CLASSIC_MTU>::new(TxRxGlue{ rx_producer });
@@ -134,7 +134,7 @@ mod tests {
     proptest! {
         #[test]
         fn receiving_the_frames_of_a_transmission_rebuilds_the_original_session_kind(payload in vec(proptest::num::u8::ANY, 1..100), kind in session_kind()) {
-            let mut rx_network = RxNetwork::<ClassicFrame, U64, U512, CLASSIC_MTU>::new();
+            let mut rx_network = RxNetwork::<ClassicFrame, U64, U512, CLASSIC_MTU>::default();
             let (rx_producer, mut rx_consumer) = rx_network.split();
 
             let mut transmitter = StreamTransmitter::<TxRxGlue<ClassicFrame, U64, U512, CLASSIC_MTU>, ClassicFrame, CLASSIC_MTU>::new(TxRxGlue{ rx_producer });
