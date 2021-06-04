@@ -93,7 +93,7 @@ fn receive<'a>(
 
 fn process(receiver: &mut RxConsumer<ClassicFrame, U64, U512, CLASSIC_MTU>) {
     println!("Looking for stored transfers.");
-    while let Some(transfer) = receiver.next() {
+    for transfer in receiver {
         println!("Found transfer {:?}", transfer);
     }
 }
