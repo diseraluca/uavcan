@@ -79,7 +79,7 @@ impl TailByte {
     // buildup as they currently need to advance manually before closing the
     // transfer.
     pub fn end_of_multi_transfer(&self) -> TailByte {
-        let mut byte = self.clone();
+        let mut byte = *self;
 
         // byte.set_toggle(byte.toggle() ^ 1);
         byte.set_is_start_of_transfer(false);
