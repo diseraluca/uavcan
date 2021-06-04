@@ -93,7 +93,7 @@ mod tests {
             let successors = std::iter::successors(
                 Some((0u8, TransferId::try_from(x).unwrap())),
                 |(n, mut source)| { source.advance(); Some((n + 1, source))}
-            ).skip_while(|(_, source)| *source != target).next().unwrap().0;
+            ).find(|(_, source)| *source == target).unwrap().0;
 
             prop_assert_eq!(TransferId::try_from(x).unwrap().difference(target), successors);
         }
