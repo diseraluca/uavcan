@@ -16,7 +16,9 @@ jobs:
         target: [--all-targets, --lib]
         exclude:
           - target: --all-targets
-            architecture: [thumbv7em-none-eabihf, thumbv6m-none-eabi]
+            architecture: thumbv7em-none-eabihf
+          - target: --all-targets
+            architecture: thumbv6m-none-eabi
           - target: --lib
             architecture: x86_64-unknown-linux-gnu
     steps:
