@@ -7,8 +7,18 @@ on:
     branches: [ main ]
 
 jobs:
-  placeholder:
-    name: Placeholder
+  build:
+    name: Build
     runs-on: ubuntu-latest
-    run: echo PLACEHOLDER
-
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          target: x86_64-unknown-linux-gnu
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          use-cross: true
+          args: --all-targets
