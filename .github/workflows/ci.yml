@@ -12,11 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        architecture: [x86_64-unknown-linux-gnu, thumbv7em-none-eabihf]
+        architecture: [x86_64-unknown-linux-gnu, thumbv7em-none-eabihf, thumbv6m-none-eabi]
         target: [--all-targets, --lib]
         exclude:
           - target: --all-targets
-            architecture: thumbv7em-none-eabihf
+            architecture: [thumbv7em-none-eabihf, thumbv6m-none-eabi]
           - target: --lib
             architecture: x86_64-unknown-linux-gnu
     steps:
