@@ -283,6 +283,10 @@ mod tests {
     extern crate std;
     use std::format;
 
+    use crate::session_id::can_id_for_session_kind;
+    use crate::session_id::session_kind::strategy::session_kind;
+    use crate::session_id::transfer_priority::strategy::transfer_priority;
+    use crate::tests::ClassicFrame;
     use crate::CLASSIC_MTU;
 
     proptest! {
@@ -320,5 +324,25 @@ mod tests {
     #[test]
     fn the_crc_is_to_be_isolated_when_the_last_frame_of_the_payload_has_a_length_of_0() {
         assert!(matches!(crc_kind::<CLASSIC_MTU>(0), CRCKind::Isolated))
+    }
+
+    proptest! {
+        #[test]
+        fn the_breakdown_of_a_zero_length_payload_is_a_single_frame_transfer(kind in session_kind(), priority in transfer_priority()) {
+            let can_id = can_id_for_session_kind(kind, priority);
+            let mut breakdown = Breakdown::<ClassicFrame, CLASSIC_MTU>::new(&[], can_id);
+
+            prop_assert!(breakdown.next().is_some());
+            prop_assert!(breakdown.next().is_none());
+        }
+
+        #[test]
+        fn the_single_frame_transfer_generated_from_a_zero_length_payload_contains_a_single_byte(kind in session_kind(), priority in transfer_priority()) {
+            let can_id = can_id_for_session_kind(kind, priority);
+            let mut breakdown = Breakdown::<ClassicFrame, CLASSIC_MTU>::new(&[], can_id);
+            let (_, payload_len) = breakdown.next().unwrap().payload();
+
+            prop_assert_eq!(payload_len, 1);
+        }
     }
 }
