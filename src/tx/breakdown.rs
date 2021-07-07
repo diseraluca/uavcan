@@ -1,6 +1,3 @@
-// TODO: Remember to deal with the fact that a 0 payload is unacceptable. Might
-// be better to deal with this outside breakdown.
-
 // TODO: A general refactoring of this must be done. Previously a
 // misunderstanding made it so that we expected the CRC to always be on its
 // frame even when enough space for it was available. This is now changed but
