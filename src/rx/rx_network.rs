@@ -11,6 +11,7 @@ use heapless::ArrayLength;
 #[derive(Debug)]
 pub enum RxError<Frame: CanFrame<MTU>, const MTU: usize> {
     OutOfSpace,
+    ZeroLengthFrame,
     BuildupError(buildup::Error<Frame, MTU>),
 }
 
@@ -111,7 +112,10 @@ impl<
     > RxProducer<'_, Frame, Capacity, TransferCapacity, MTU>
 {
     pub fn receive(&mut self, frame: Frame) -> Result<(), RxError<Frame, MTU>> {
-        // println!("Received frame {:?}", frame);
+        if let (_, 0) = frame.payload() {
+            return Err(RxError::ZeroLengthFrame);
+        }
+
         match self
             .buildup
             .get_or_insert_with(Buildup::default)
@@ -128,5 +132,24 @@ impl<
             }
             _ => Ok(()),
         }
+    }
+}
+
+#[cfg(test)]
+pub mod tests {
+    use super::*;
+    use crate::tests::ClassicFrame;
+    use crate::CLASSIC_MTU;
+    use heapless::consts::{U512, U64};
+
+    #[test]
+    fn receiving_a_frame_with_no_data_results_in_an_error() {
+        let mut network = RxNetwork::<ClassicFrame, U64, U512, CLASSIC_MTU>::default();
+        let (mut producer, _) = network.split();
+        let empty_payload: [u8; 8] = [0; 8];
+
+        assert!(producer
+            .receive(ClassicFrame::from((0, empty_payload, 0)))
+            .is_err());
     }
 }
